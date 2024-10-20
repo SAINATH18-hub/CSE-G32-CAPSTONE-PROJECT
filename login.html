@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/login.css">
+    <title>Login</title>
+</head>
+<body>
+    <?php
+    session_start();
+    // Initialize session variables
+    date_default_timezone_set('Asia/Kolkata');
+    include("connection.php");
+
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $email = $_POST['useremail'];
+        $password = $_POST['userpassword'];
+        $error = "";
+
+        // Query database for user with the given email
+        // Assuming function getUserByEmail() retrieves user details based on the email provided
+        $user = getUserByEmail($email);
+
+        if ($user) {
+            // Check user type
+            if ($user['type'] == 'patient') {
+                // Query patient table for credentials
+                $credentials = getPatientCredentials($email, $password);
+                if ($credentials) {
+                    $_SESSION['user'] = $credentials;
+                    header("Location: patient_dashboard.php");
+                } else {
+                    $error = "Invalid credentials for patient.";
+                }
+            } elseif ($user['type'] == 'admin') {
+                // Query admin table for credentials
+                $credentials = getAdminCredentials($email, $password);
+                if ($credentials) {
+                    $_SESSION['admin'] = $credentials;
+                    header("Location: admin_dashboard.php");
+                } else {
+                    $error = "Invalid credentials for admin.";
+                }
+            } elseif ($user['type'] == 'doctor') {
+                // Query doctor table for credentials
+                $credentials = getDoctorCredentials($email, $password);
+                if ($credentials) {
+                    $_SESSION['doctor'] = $credentials;
+                    header("Location: doctor_dashboard.php");
+                } else {
+                    $error = "Invalid credentials for doctor.";
+                }
+            } else {
+                $error = "User type not recognized.";
+            }
+        } else {
+            $error = "User not found.";
+        }
+    }
+    ?>
+    
+    <center>
+        <div class="container">
+            <table border="0" style="margin: 0;padding: 0;width: 60%;">
+                <tr>
+                    <td>
+                        <p class="header-text">Welcome Back!</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="form-body">
+                            <p class="sub-text">Login with your details to continue</p>
+                        </div>
+                    </td>
+                </tr>
+                <form action="" method="POST">
+                    <tr>
+                        <td class="label-td">
+                            <label for="useremail" class="form-label">Email: </label>
+                        </td>
+                        <td class="label-td">
+                            <input type="email" name="useremail" class="input-text" placeholder="Email Address" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label-td">
+                            <label for="userpassword" class="form-label">Password: </label>
+                        </td>
+                        <td class="label-td">
+                            <input type="password" name="userpassword" class="input-text" placeholder="Password" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <?php echo $error; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="submit" value="Login" class="login-btn btn-primary btn">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <br>
+                            <label for="" class="sub-text" style="font-weight: 280;">Don't have an account? </label>
+                            <a href="signup.php" class="hover-link1 non-style-link">Sign Up</a>
+                            <br><br><br>
+                        </td>
+                    </tr>
+                </form>
+            </table>
+        </div>
+    </center>
+</body>
+</html>
